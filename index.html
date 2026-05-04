@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEAM评论区文档编辑器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1b2838;
+            color: #acb2b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .shortcut-panel {
+            background-color: #2a3f5a;
+            border-radius: 4px;
+            padding: 10px 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 0px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 调整编辑区和预览区的布局 */
+        .editor-preview-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .editor-panel {
+            flex: 1;
+            max-width: 500px; /* STEAM论坛评论区宽度 */
+            background-color: #2a3f5a;
+            border-radius: 4px;
+            padding: 16px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .preview-panel  {
+            flex: 1;
+            max-width: 580px; /* STEAM论坛评论区宽度 */
+            background-color: #2a3f5a;
+            border-radius: 4px;
+            padding: 16px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel-title {
+            color: #67c1f5;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        #editor {
+            width: calc(100% - 22px); /* 调整宽度以匹配背景 */
+            height: 500px;
+            background-color: #16202d;
+            color: #acb2b8;
+            border: 1px solid #4a5c72;
+            padding: 10px;
+            border-radius: 4px;
+            resize: none;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        #preview {
+            min-height: 500px;
+            max-height: 500px;
+            background-color: #16202d;
+            border: 1px solid #4a5c72;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-wrap: break-word;
+            overflow-y: auto;
+            width: 530px; 
+        }
+        
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .toolbar button {
+            background-color: #4a5c72;
+            color: #e5e5e5;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s;
+        }
+        
+        .toolbar button:hover {
+            background-color: #67c1f5;
+            color: #1b2838;
+        }
+        
+        /* STEAM样式 */
+        .steam-h1 {
+            color: #67c1f5;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+            margin-bottom: 0;
+            padding: 0;
+        }
+        
+        .steam-h2 {
+            color: #67c1f5;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            margin-bottom: 0;
+            padding: 0;
+        }
+        
+        .steam-h3 {
+            color: #67c1f5;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            margin-bottom: 0;
+            padding: 0;
+        }
+        
+        .steam-bold {
+            font-weight: bold;
+            color: #e5e5e5;
+        }
+        
+        .steam-italic {
+            font-style: italic;
+        }
+        
+        .steam-underline {
+            text-decoration: underline;
+        }
+        
+        .steam-strike {
+            text-decoration: line-through;
+        }
+        
+        .steam-spoiler {
+            background-color: #4a5c72;
+            color: #4a5c72;
+            padding: 0 2px;
+        }
+        
+        .steam-spoiler:hover {
+            background-color: transparent;
+            color: inherit;
+        }
+        
+        .steam-hr {
+            border: 0;
+            height: 1px;
+            background-color: #4a5c72;
+            margin: 10px 0;
+        }
+        
+        .steam-url {
+            color: #67c1f5;
+            text-decoration: none;
+        }
+        
+        .steam-url:hover {
+            text-decoration: underline;
+        }
+        
+        .shortcut-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .shortcut-list li {
+            padding: 5px 8px;
+            border-bottom: none;
+            background-color: #1e2a38;
+            border-radius: 3px;
+            font-size: 12px; 
+        }
+        
+        .shortcut-key {
+            display: inline-block;
+            width: 80px;
+            color: #67c1f5;
+        }
+        
+        /* 列表样式调整 */
+        .steam-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        
+        .steam-list li {
+            margin: 0;
+            padding: 0;
+            text-indent: -5px;
+        }
+        
+        .steam-list-ordered {
+            list-style-type: decimal;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        
+        .steam-list-ordered li {
+            margin: 0;
+            padding: 0;
+            text-indent: -5px;
+        }
+        
+        /* 修改后的引用样式 - 方框效果 */
+        .steam-quote {
+            border-radius: 4px;
+            padding: 10px 10px 10px 11px;
+            border: 1px solid #233c51;
+            font-size: 13px;
+            margin: 10px 0;
+            display: inline-block; 
+            box-sizing: border-box;
+            white-space: normal; /* 改为 normal 允许换行 */
+            word-wrap: break-word; /* 确保长单词也能换行 */
+        }
+        
+        .steam-quote-author {
+            color: #67c1f5;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* 修改后的代码样式 - 与quote相同的方框效果但宽度维持原样 */
+        .steam-code {
+            font-family: monospace;
+            border-radius: 4px;
+            padding: 10px 10px 10px 11px;
+            border: 1px solid #515152;
+            font-size: 11px;
+            margin: 5px 0;
+            width: 100%;
+            white-space: pre-wrap; /* 改为 pre-wrap 保留空格但允许换行 */
+            overflow-x: auto;
+            box-sizing: border-box;
+            word-break: break-all; /* 确保代码中的长字符串也能换行 */
+        }
+        
+        .steam-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .steam-table th, .steam-table td {
+            border: 1px solid #4a5c72;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .steam-table th {
+            background-color: #2a3f5a;
+            color: #67c1f5;
+        }
+        
+        .steam-table tr:nth-child(even) {
+            background-color: #1e2a38;
+        }
+        
+        .steam-table tr:hover {
+            background-color: #2a3f5a;
+        }
+        
+        .save-button {
+            background-color: #5c7e10;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .save-button:hover {
+            background-color: #6e9613;
+        }
+
+        /* 制作人信息样式 */
+        .producer-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            text-align: right;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* 模板按钮样式 */
+        .template-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 7px;
+            justify-content: left;
+            flex-wrap: wrap;
+  padding-left: 15px;
+        }
+        
+        .template-button {
+            background-color: #4a5c72;
+            color: #e5e5e5;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+
+        }
+        
+        .template-button:hover {
+            background-color: #67c1f5;
+            color: #1b2838;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .editor-preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .editor-panel, .preview-panel {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            #preview {
+                width: calc(100% - 32px);
+            }
+
+            .template-buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .shortcut-list {
+                justify-content: flex-start;
+            }
+            
+            .template-button {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>STEAM评论区文档编辑器</h1>
+    
+    <div class="container">
+        <div class="shortcut-panel">
+            <h2 class="panel-title">快捷键列表</h2>
+            <ul class="shortcut-list">
+                <li><span class="shortcut-key">Ctrl+1</span> 一级标题</li>
+                <li><span class="shortcut-key">Ctrl+2</span> 二级标题</li>
+                <li><span class="shortcut-key">Ctrl+3</span> 三级标题</li>
+                <li><span class="shortcut-key">Ctrl+B</span> 粗体</li>
+                <li><span class="shortcut-key">Ctrl+I</span> 斜体</li>
+                <li><span class="shortcut-key">Ctrl+U</span> 下划线</li>
+                <li><span class="shortcut-key">Ctrl+S</span> 删除线</li>
+                <li><span class="shortcut-key">Ctrl+H</span> 隐藏文本</li>
+                <li><span class="shortcut-key">Ctrl+N</span> 不解析标签</li>
+                <li><span class="shortcut-key">Ctrl+L</span> 水平线</li>
+                <li><span class="shortcut-key">Ctrl+K</span> 插入链接</li>
+                <li><span class="shortcut-key">Ctrl+Z</span> 撤销</li>
+                <li><span class="shortcut-key">Ctrl+Y</span> 重做</li>
+                <li><span class="shortcut-key">Ctrl+Q</span> 引用</li>
+                <li><span class="shortcut-key">Ctrl+P</span> 等宽字体，保留空格</li>
+                <li><span class="shortcut-key">Ctrl+M</span> 无序列表</li>
+                <li><span class="shortcut-key">Ctrl+O</span> 有序列表</li>
+            </ul>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 模板按钮区域 -->
+            <div class="template-buttons">
+                <button class="template-button" onclick="loadTemplate('steam_comment.txt')">极简游戏测评模板</button>
+                <button class="template-button" onclick="loadTemplate('steam_comment (2).txt')">通用型测评模板</button>
+                <button class="template-button" onclick="loadTemplate('steam_comment (1).txt')">Steam游戏评分机制模板</button>
+            </div>
+            
+            <!-- 编辑和预览区域 -->
+            <div class="editor-preview-container">
+                <div class="editor-panel">
+                    <h2 class="panel-title">编辑区</h2>
+                    
+                    <div class="toolbar">
+                        <button title="一级标题 (Ctrl+1)" onclick="insertTag('h1', '标题文字')">h1</button>
+                        <button title="二级标题 (Ctrl+2)" onclick="insertTag('h2', '标题文字')">h2</button>
+                        <button title="三级标题 (Ctrl+3)" onclick="insertTag('h3', '标题文字')">h3</button>
+                        <button title="粗体 (Ctrl+B)" onclick="insertTag('b', '粗体文本')">粗体</button>
+                        <button title="斜体 (Ctrl+I)" onclick="insertTag('i', '斜体文本')">斜体</button>
+                        <button title="下划线 (Ctrl+U)" onclick="insertTag('u', '下划线文本')">下划线</button>
+                        <button title="删除线 (Ctrl+S)" onclick="insertTag('strike', '删除文本')">删除线</button>
+                        <button title="隐藏文本 (Ctrl+H)" onclick="insertTag('spoiler', '隐藏文本')">隐藏文本</button>
+                        <button title="不解析标签 (Ctrl+N)" onclick="insertTag('noparse', '不解析[b]标签[/b]')">不解析标签</button>
+                        <button title="水平线 (Ctrl+L)" onclick="insertTag('hr', '')">水平线</button>
+                        <button title="链接 (Ctrl+K)" onclick="insertUrl()">链接</button>
+                        <button title="无序列表 (Ctrl+M)" onclick="insertUnorderedList()">无序列表</button>
+                        <button title="有序列表 (Ctrl+O)" onclick="insertOrderedList()">有序列表</button>
+                        <button title="引用 (Ctrl+Q)" onclick="insertQuote()">引用</button>
+                        <button title="等宽字体，保留空格 (Ctrl+P)" onclick="insertCode()">等宽字体，保留空格</button>
+                        <button title="表格 (Ctrl+T)" onclick="insertTable()">表格</button>
+                    </div>
+                    
+                    <textarea id="editor" placeholder="在此输入内容..."></textarea>
+                    <button class="save-button" onclick="saveToFile()">保存为TXT文件</button>
+                </div>
+                
+                <div class="preview-panel">
+                    <h2 class="panel-title">预览区</h2>
+                    <div id="preview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 制作人信息 -->
+    <p class="producer-info">制作人：玩咖游戏屋</p>
+    
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        
+        // 编辑历史
+        let history = [''];
+        let historyIndex = 0;
+        
+        // 初始化
+        editor.addEventListener('input', updatePreview);
+        editor.addEventListener('input', saveHistory);
+        updatePreview();
+        
+        // 快捷键支持
+        editor.addEventListener('keydown', function(e) {
+            if (e.ctrlKey) {
+                switch (e.key.toLowerCase()) {
+                    case '1': e.preventDefault(); insertTag('h1', '标题文字'); break;
+                    case '2': e.preventDefault(); insertTag('h2', '标题文字'); break;
+                    case '3': e.preventDefault(); insertTag('h3', '标题文字'); break;
+                    case 'b': e.preventDefault(); insertTag('b', '粗体文本'); break;
+                    case 'i': e.preventDefault(); insertTag('i', '斜体文本'); break;
+                    case 'u': e.preventDefault(); insertTag('u', '下划线文本'); break;
+                    case 's': e.preventDefault(); insertTag('strike', '删除文本'); break;
+                    case 'h': e.preventDefault(); insertTag('spoiler', '隐藏文本'); break;
+                    case 'n': e.preventDefault(); insertTag('noparse', '不解析[b]标签[/b]'); break;
+                    case 'l': e.preventDefault(); insertTag('hr', ''); break;
+                    case 'k': e.preventDefault(); insertUrl(); break;
+                    case 'z': e.preventDefault(); undo(); break;
+                    case 'y': e.preventDefault(); redo(); break;
+                    case 'q': e.preventDefault(); insertQuote(); break;
+                    case 'p': e.preventDefault(); insertCode(); break;
+                    case 'm': e.preventDefault(); insertUnorderedList(); break;
+                    case 'o': e.preventDefault(); insertOrderedList(); break;
+                    case 't': e.preventDefault(); insertTable(); break;
+                }
+            }
+        });
+        
+        // 加载模板
+        function loadTemplate(templateName) {
+            let templateContent = '';
+            
+            switch(templateName) {
+                case 'steam_comment.txt':
+                    templateContent = `[h1]极简游戏测评模板[/h1]
+[h1]1. 一句话总结[/h1]
+「这是一款________（类型/风格）游戏，核心体验是________。」
+（例：「这是一款复古像素风RPG，核心体验是策略性回合制战斗。」）
+
+[h1]2. 亮点（1-2个）[/h1]
+✓ ________（最吸引你的设计/机制）
+✓ ________（让你沉迷的原因）
+
+[h1]3. 短板（1-2个）[/h1]
+✗ ________（影响体验的缺陷）
+✗ ________（可以改进的部分）
+
+[h1]4. 适合谁？[/h1]
+「推荐给喜欢________的玩家，但________的人可能会劝退。」
+（例：「推荐给喜欢慢节奏叙事的玩家，但追求快节奏战斗的人可能会无聊。」）
+
+[h1]5. 买不买？[/h1]
+「原价/打折/免费？________（值/不值）」
+（例：「等5折后入手很值，但原价内容量稍少。」）
+
+[quote]示例（《哈迪斯》测评）
+「这是一款Roguelike动作游戏，核心体验是爽快战斗+丰富Build。
+✓ 武器和祝福组合变化多，每一局都有新鲜感
+✓ 剧情和死亡机制巧妙结合，推进自然
+✗ 后期难度曲线略陡，部分BOSS战重复
+推荐给喜欢挑战和叙事的玩家，但讨厌重复刷的可能会腻。
+原价超值，打折闭眼入。」[/quote]`;
+                    break;
+                    
+                case 'steam_comment (2).txt':
+                    templateContent = `[h1]通用型模板（用题目代替）[/h1]
+
+[h2]引言（游戏概览）[/h2]
+内容提示：
+简单介绍游戏类型、开发商、你的游玩时长。
+第一印象：是否吸引你？是否符合预期？
+用一句话总结整体感受（如"惊喜之作"或"略有失望"）。
+
+[quote]示例：
+"《XXX》是由[开发商]打造的[类型]游戏，我目前已游玩[XX小时]。作为一款主打[核心特色，如'开放世界探索']的作品，它给我的第一印象是[震撼/平淡/意外]，下面从多个维度详细分析。"[/quote]
+
+[h2] 玩法（核心体验）[/h2]
+内容提示：
+操作与机制：战斗系统、解谜、建造等是否流畅？有无创新？
+节奏与难度：是否容易上手？后期是否枯燥或过难？
+重玩性：多周目、随机事件、MOD支持等。
+
+[quote]示例：
+"游戏采用[回合制/即时战斗]，[举例说明特色机制，如'技能组合自由度极高']。前期引导清晰，但后期[是否存在问题，如'敌人数值膨胀']。联机合作模式是亮点，但单人内容略显重复。"[/quote]
+
+[h2] 剧情（叙事评价）[/h2]
+内容提示：
+主线与支线：故事是否引人入胜？支线任务是否敷衍？
+角色塑造：主角或NPC是否立体？对话是否自然？
+结局设计：多结局？是否有逻辑漏洞？
+
+[quote]示例：
+"主线围绕[故事主题]展开，[评价叙事节奏，如'前期铺垫过长']。配角[某角色]的塑造令人难忘，但部分支线仅是'跑腿任务'。真结局需要全收集，略显强行延长游戏时间。"[/quote]
+
+[h2]画面与音效（视听表现）[/h2]
+内容提示：
+美术风格：写实/卡通/像素？是否符合题材？
+技术表现：优化如何？帧数是否稳定？
+音乐与配音：BGM是否贴合氛围？配音质量？
+
+[quote]示例：
+"手绘风格的美术极具辨识度，但[吐槽点，如'雨天特效穿模']。配乐由[作曲家]操刀，[举例，如'战斗曲热血澎湃']，但部分场景音效循环突兀。"[/quote]
+
+[h2]缺点（客观批评）[/h2]
+内容提示：
+列举具体问题：如Bug、设计缺陷、内容不足等。
+改进建议：如何优化会更合理？
+是否影响体验：是致命伤还是可容忍？
+
+[quote]示例：
+"目前遇到的硬伤：
+①[如'任务追踪系统经常失灵']；
+②[如'中文翻译机翻痕迹明显']。虽然官方承诺修复，但建议玩家[购买建议，如'观望后续补丁']。"[/quote]
+
+[h2] 结语（总结与推荐）[/h2]
+内容提示：
+再次总结优缺点：用1-2句话概括。
+目标玩家：适合哪类人群？（如"硬核玩家/休闲党"）
+购买建议：原价入？等打折？完全不推荐？
+
+[quote]示例：
+"尽管存在[主要缺点]，但[核心优点]仍让它脱颖而出。如果你是[如'喜欢慢节奏叙事的玩家']，这款游戏值得[原价/打折]入手。[/quote]
+
+个人评分：⭐️⭐️⭐️⭐️（4/5）。`;
+                    break;
+                    
+                case 'steam_comment (1).txt':
+                    templateContent = `[h1]Steam游戏评分机制模板[/h1]
+[quote]操作时用☑替换☐即可，建议将替换后的字段加粗，效果更佳；例：[b]☑优秀[/b][/quote]
+[h3]1. 画面[/h3]
+☐ 美到忘记现实
+☐ 优秀
+☐ 良好
+☐ 一般
+☐ 糟糕
+☐ 别盯着看太久 
+☐ MS-DOS级别 
+[h3]2. 游戏性[/h3]
+☐ 超好玩 
+☐ 好玩
+☐ 就是个游戏 
+☐ 还行
+☐ 不如看油漆干 
+☐ 千万别玩 
+[h3]3. 音效[/h3]
+☐ 听觉盛宴 
+☐ 超赞
+☐ 不错
+☐ 一般
+☐ 糟糕
+☐ 我聋了 
+[h3]4. 适合人群[/h3]
+☐ 小朋友 
+☐ 青少年
+☐ 成年人
+☐ 阿嬷 
+[h3]5. 电脑需求[/h3]
+☐ 能跑小画家就行 
+☐ 马铃薯级别
+☐ 还可以
+☐ 流畅
+☐ 土豪配置 
+☐ 需要NASA的电脑 
+[h3]6. 难度[/h3]
+☐ 按着"W"就能赢 
+☐ 简单
+☐ 易上手难精通 
+☐ 需要动脑
+☐ 困难
+☐ 黑魂级 
+[h3]7. 肝度（Grind）[/h3]
+☐ 无需刷 
+☐ 除非你在意排名
+☐ 不刷也能过
+☐ 普通肝度
+☐ 刷到烦
+☐ 需要两辈子 
+[h3]8. 剧情[/h3]
+☐ 没有剧情 
+☐ 有点背景故事
+☐ 一般般
+☐ 不错
+☐ 很感人
+☐ 改变人生 
+[h3]9. 游戏时长[/h3]
+☐ 一杯咖啡的时间 
+☐ 短
+☐ 一般
+☐ 长
+☐ 永无止境 2
+[h3]10. 价格[/h3]
+☐ 免费！ 2
+☐ 物超所值
+☐ 打折时买
+☐ 有闲钱再买
+☐ 不推荐
+☐ 直接烧钱算了
+[h3]11. Bug数量[/h3]
+☐ 从没听过 
+☐ 小Bug
+☐ 有点烦人
+☐ 方舟：生存进化级 
+☐ 整个游戏就是个虫虫农场 
+[h3]12. 综合评分（? / 10）[/h3]
+☐ 1
+☐ 2
+☐ 3
+☐ 4
+☐ 5
+☐ 6
+☐ 7
+☐ 8
+☐ 9
+☐ 10`;
+                    break;
+            }
+            
+            editor.value = templateContent;
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 更新预览
+        function updatePreview() {
+            const text = editor.value;
+            preview.innerHTML = formatText(text);
+        }
+        
+        // 格式化文本
+        function formatText(text) {
+            // 处理不解析标签
+            text = text.replace(/\[noparse\](.*?)\[\/noparse\]/g, function(match, content) {
+                return escapeHtml(content);
+            });
+
+            // 处理其他标签
+            text = text.replace(/\[h1\](.*?)\[\/h1\]/g, '<div class="steam-h1">$1</div>');
+            text = text.replace(/\[h2\](.*?)\[\/h2\]/g, '<div class="steam-h2">$1</div>');
+            text = text.replace(/\[h3\](.*?)\[\/h3\]/g, '<div class="steam-h3">$1</div>');
+            text = text.replace(/\[b\](.*?)\[\/b\]/g, '<span class="steam-bold">$1</span>');
+            text = text.replace(/\[i\](.*?)\[\/i\]/g, '<span class="steam-italic">$1</span>');
+            text = text.replace(/\[u\](.*?)\[\/u\]/g, '<span class="steam-underline">$1</span>');
+            text = text.replace(/\[strike\](.*?)\[\/strike\]/g, '<span class="steam-strike">$1</span>');
+            text = text.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="steam-spoiler">$1</span>');
+            text = text.replace(/\[hr\]\[\/hr\]/g, '<hr class="steam-hr">');
+
+            // 处理链接
+            text = text.replace(/\[url=(.*?)\](.*?)\[\/url\]/g, function(match, url, text) {
+                // 确保URL有协议
+                if (!url.match(/^https?:\/\//)) {
+                    url = 'https://' + url;
+                }
+                return `<a href="${escapeHtml(url)}" class="steam-url" target="_blank">${escapeHtml(text)}</a>`;
+            });
+
+            // 处理无序列表
+            text = text.replace(/\[list\](.*?)\[\/list\]/gs, function(match, content) {
+                const items = content.split('[*]').filter(item => item.trim() !== '');
+                if (items.length === 0) return '';
+
+                let html = '<ul class="steam-list">';
+                items.forEach(item => {
+                    html += `<li>${formatText(item.trim())}</li>`;
+                });
+                html += '</ul>';
+                return html;
+            });
+
+            // 处理有序列表
+            text = text.replace(/\[olist\](.*?)\[\/olist\]/gs, function(match, content) {
+                const items = content.split('[*]').filter(item => item.trim() !== '');
+                if (items.length === 0) return '';
+
+                let html = '<ol class="steam-list-ordered">';
+                items.forEach(item => {
+                    html += `<li>${formatText(item.trim())}</li>`;
+                });
+                html += '</ol>';
+                return html;
+            });
+
+            // 处理引用 - 修改为方框样式
+            text = text.replace(/\[quote(?:=(.*?))?\](.*?)\[\/quote\]/gs, function(match, author, content) {
+                let authorHtml = '';
+                if (author) {
+                    authorHtml = `<span class="steam-quote-author">${escapeHtml(author)}</span>`;
+                }
+                return `<div class="steam-quote">${authorHtml}${formatText(content)}</div>`;
+            });
+
+            // 处理等宽字体，保留空格 - 修改为方框样式
+            text = text.replace(/\[code\](.*?)\[\/code\]/gs, function(match, content) {
+                return `<div class="steam-code">${escapeHtml(content)}</div>`;
+            });
+
+            // 处理表格
+            text = text.replace(/\[table\](.*?)\[\/table\]/gs, function(match, content) {
+                const rows = content.split('[tr]').filter(row => row.trim() !== '');
+                if (rows.length === 0) return '';
+
+                let html = '<table class="steam-table">';
+                rows.forEach(row => {
+                    const cells = row.split('[/tr]')[0].trim();
+                    const isHeader = cells.includes('[th]');
+
+                    html += '<tr>';
+                    const cellTag = isHeader ? 'th' : 'td';
+                    const cellParts = cells.split(`[${cellTag}]`).filter(cell => cell.trim() !== '');
+
+                    cellParts.forEach(cell => {
+                        const cellContent = cell.split(`[/${cellTag}]`)[0].trim();
+                        html += `<${cellTag}>${formatText(cellContent)}</${cellTag}>`;
+                    });
+
+                    html += '</tr>';
+                });
+                html += '</table>';
+                return html;
+            });
+
+            // 去除标题标签后面紧接着的换行符
+            text = text.replace(/<div class="steam-(h1|h2|h3)">(.*?)<\/div>\n/g, '<div class="steam-$1">$2</div>');
+            // 去除水平线标签后面紧接着的换行符
+            text = text.replace(/<hr class="steam-hr">\n/g, '<hr class="steam-hr">');
+            // 去除无序列表标签后面紧接着的换行符
+            text = text.replace(/<\/ul>\n/g, '</ul>');
+            // 去除有序列表标签后面紧接着的换行符
+            text = text.replace(/<\/ol>\n/g, '</ol>');
+           
+            // 处理换行
+            text = text.replace(/\n/g, '<br>');
+
+            return text;
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+        
+        // 插入标签 - 修改为支持多行
+        function insertTag(tag, placeholder) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            
+            let openTag = `[${tag}]`;
+            let closeTag = `[/${tag}]`;
+            
+            if (tag === 'hr') {
+                openTag = '[hr][/hr]';
+                closeTag = '';
+            }
+            
+            // 处理多行选择
+            if (selectedText.includes('\n')) {
+                const lines = selectedText.split('\n');
+                let formattedText = '';
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].trim() !== '') {
+                        formattedText += `${openTag}${lines[i]}${closeTag}`;
+                    }
+                    if (i < lines.length - 1) {
+                        formattedText += '\n';
+                    }
+                }
+                
+                editor.setRangeText(formattedText);
+                editor.setSelectionRange(start, start + formattedText.length);
+            } else {
+                const textToInsert = selectedText || placeholder;
+                editor.setRangeText(`${openTag}${textToInsert}${closeTag}`);
+                
+                // 设置光标位置
+                if (selectedText) {
+                    editor.setSelectionRange(start + openTag.length, end + openTag.length);
+                } else {
+                    const cursorPos = start + openTag.length;
+                    editor.setSelectionRange(cursorPos, cursorPos + textToInsert.length);
+                }
+            }
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 插入链接
+        function insertUrl() {
+            const url = prompt('请输入链接地址:', 'store.steampowered.com');
+            if (url === null) return;
+            
+            const text = prompt('请输入链接文本:', url);
+            if (text === null) return;
+            
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            
+            editor.setRangeText(`[url=${url}]${text}[/url]`);
+            
+            // 设置光标位置
+            editor.setSelectionRange(start, start + `[url=${url}]${text}[/url]`.length);
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 插入无序列表
+        function insertUnorderedList() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            
+            if (selectedText) {
+                const items = selectedText.split('\n').filter(item => item.trim() !== '');
+                let listContent = '[list]\n';
+                items.forEach(item => {
+                    listContent += `    [*]${item}\n`;
+                });
+                listContent += '[/list]';
+                
+                editor.setRangeText(listContent);
+                editor.setSelectionRange(start, start + listContent.length);
+            } else {
+                const listContent = '[list]\n    [*]列表项1\n    [*]列表项2\n[/list]';
+                const cursorPos = start + listContent.indexOf('列表项1');
+                
+                editor.setRangeText(listContent);
+                editor.setSelectionRange(cursorPos, cursorPos + '列表项1'.length);
+            }
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+       // 插入有序列表
+        function insertOrderedList() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            
+            if (selectedText) {
+                const items = selectedText.split('\n').filter(item => item.trim() !== '');
+                let listContent = '[olist]\n';
+                items.forEach(item => {
+                    listContent += `    [*]${item}\n`;
+                });
+                listContent += '[/olist]';
+                
+                editor.setRangeText(listContent);
+                editor.setSelectionRange(start, start + listContent.length);
+            } else {
+                const listContent = '[olist]\n    [*]列表项1\n    [*]列表项2\n[/olist]';
+                const cursorPos = start + listContent.indexOf('列表项1');
+                
+                editor.setRangeText(listContent);
+                editor.setSelectionRange(cursorPos, cursorPos + '列表项1'.length);
+            }
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 插入引用
+        function insertQuote() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            
+            if (selectedText) {
+                const author = prompt('请输入引用作者(可选，留空则不显示作者):', '');
+                let quoteContent;
+                
+                if (author !== null) {
+                    if (author.trim() !== '') {
+                        quoteContent = `[quote=${author}]${selectedText}[/quote]`;
+                    } else {
+                        quoteContent = `[quote]${selectedText}[/quote]`;
+                    }
+                    editor.setRangeText(quoteContent);
+                    editor.setSelectionRange(start, start + quoteContent.length);
+                }
+            } else {
+                const quoteContent = '[quote=作者]引用文本[/quote]';
+                const cursorPos = start + quoteContent.indexOf('引用文本');
+                
+                editor.setRangeText(quoteContent);
+                editor.setSelectionRange(cursorPos, cursorPos + '引用文本'.length);
+            }
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 插入等宽字体， 保留空格 
+        function insertCode() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            
+            if (selectedText) {
+                const codeContent = `[code]${selectedText}[/code]`;
+                editor.setRangeText(codeContent);
+                editor.setSelectionRange(start, start + codeContent.length);
+            } else {
+                const codeContent = '[code]等宽字体，保留空格[/code]';
+                const cursorPos = start + codeContent.indexOf('等宽字体');
+                
+                editor.setRangeText(codeContent);
+                editor.setSelectionRange(cursorPos, cursorPos + '等宽字体，保留空格'.length);
+            }
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 插入表格
+        function insertTable() {
+            const start = editor.selectionStart;
+            const tableContent = `[table]
+    [tr]
+        [th]Name[/th]
+        [th]Age[/th]
+    [/tr]
+    [tr]
+        [td]John[/td]
+        [td]65[/td]
+    [/tr]
+    [tr]
+        [td]Gitte[/td]
+        [td]40[/td]
+    [/tr]
+    [tr]
+        [td]Sussie[/td]
+        [td]19[/td]
+    [/tr]
+[/table]`;
+            
+            editor.setRangeText(tableContent);
+            editor.setSelectionRange(start, start + tableContent.length);
+            
+            editor.focus();
+            updatePreview();
+            saveHistory();
+        }
+        
+        // 保存历史
+        function saveHistory() {
+            // 移除当前状态之后的所有历史记录
+            history = history.slice(0, historyIndex + 1);
+            history.push(editor.value);
+            historyIndex = history.length - 1;
+        }
+        
+        // 撤销
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                editor.value = history[historyIndex];
+                updatePreview();
+            }
+        }
+        
+        // 重做
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                editor.value = history[historyIndex];
+                updatePreview();
+            }
+        }
+        
+        // 保存为文件
+        function saveToFile() {
+            const text = editor.value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'steam_comment.txt';
+            a.click();
+        }
+    </script>
+</body>
+</html>
